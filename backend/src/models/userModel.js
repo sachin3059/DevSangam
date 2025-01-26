@@ -33,7 +33,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: [true, 'Password is required'],
       minlength: [8, 'Password must be at least 8 characters long'],
-      maxlength: [16, 'Password cannot exceed 16 characters'],
+      maxlength: [100, 'Password cannot exceed 16 characters'],
       validate(value) {
         if (!validator.isStrongPassword(value)) {
           throw new Error(`Password is not strong enough: password must contain [minLowercase: 1, minUppercase: 1, minNumbers: 1, minSymbols: 1]:  ${value} ` );

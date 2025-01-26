@@ -8,3 +8,9 @@
 - data sanitizing - add api validation for each field
 - install validator
 - explore  validator library  fucntion and use for password, email , url , phone no
+- NEVER TRUST req.body
+
+
+- validate data in signup api
+- install bcrypt library
+- create a hashedPassword  using bcrypt.hash(plainPassword, salt) and save the user 
