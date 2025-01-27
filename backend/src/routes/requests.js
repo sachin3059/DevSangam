@@ -13,11 +13,11 @@ requestRouter.post('/request/send/:status/:toUserId', userAuth,  async (req, res
         const allowedStatus = ["ignored", "interested"];
         if(!allowedStatus.includes(status)){
             return res.status(400).json({
-                message: "invalid status type " + status
+                success: false,
+                message: "invalid status type: " + status,
             });
         }
 
-        // check if there is an existing connectionrequest:
         const existingConnectionRequest = await Connection.findOne({
             $or: [
                 { fromUserId, toUserId },
@@ -27,6 +27,7 @@ requestRouter.post('/request/send/:status/:toUserId', userAuth,  async (req, res
         
         if(existingConnectionRequest){
             return res.status(400).json({
+                success: false,
                 message: "connection request already present!"
             });
         };
@@ -36,6 +37,7 @@ requestRouter.post('/request/send/:status/:toUserId', userAuth,  async (req, res
 
         if(!toUser){
             return res.status(400).json({
+                success: false,
                 message: "user not found!"
             });
         };
@@ -48,14 +50,62 @@ requestRouter.post('/request/send/:status/:toUserId', userAuth,  async (req, res
 
         const data = await connectionRequest.save();
 
-        res.json({
+        res.status(200).json({
+            success: true,
             message: "Connection request send successfully!",
             data,
         });
 
     } catch (error) {
-        res.status(400).send("Error: " + error.message);
-    }
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    };
+});
+
+requestRouter.post("/request/review/:status/:requestId", userAuth, async (req, res) =>{
+    try {
+        const loggedInUser = req.user;
+        const { status, requestId } = req.params;
+        const allowedStatus = ["accepted", "rejected"];
+        if(!allowedStatus.includes(status)){
+            return res.status(400).json({
+                message: 'Status is not allowed'
+            });
+        };
+        console.log(loggedInUser);
+
+        const connectionRequest = await Connection.findOne({
+            _id: requestId,
+            toUserId: loggedInUser._id,
+            status: "interested",
+        }); 
+        console.log(connectionRequest);
+
+        if(!connectionRequest){
+            return res.status(400).json({
+                success: false,
+                message: 'There is no connection between them',
+            });
+        };
+
+        connectionRequest.status = status;
+
+        await connectionRequest.save();
+
+        res.status(200).json({
+            success: true,
+            message: `Connection successfully: ${status}`,
+            data: connectionRequest,
+        });
+        
+    } catch (error) {
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    };
 });
 
 module.exports = requestRouter;

@@ -8,65 +8,92 @@ const { validateEditProfileData } = require("../utils/validation");
 profileRouter.get("/profile/view", userAuth, async(req, res) => {
     try {
         const user = req.user;
-        res.send(user);    
+        if(!user){
+            return res.status(400).json({
+                success: false,
+                message: 'User not find',
+            });
+        };
+        
+        res.status(200).json({
+            success: true,
+            message: 'User Profile find successfully! ',
+            user: user,
+        });   
     } catch (error) {
-        res.status(400).send(`Error: ${error.message}`);
-    } 
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    };
 });
 
 profileRouter.patch("/profile/edit", userAuth, async (req, res) => {
     try {
         if(!validateEditProfileData(req)){
-          throw new Error("invalid edit data");
-        }
-        const loggedInUser = req.user;
+          return res.status(400).json({
+            success: false,
+            message: 'Enter valid input',
+          });
+        };
 
+        const loggedInUser = req.user;
         Object.keys(req.body).forEach(key => loggedInUser[key] = req.body[key]);
 
         await loggedInUser.save();
 
-        res.json({
-          message: `${loggedInUser.firstName}, profile update successfully`,
-          data: loggedInUser,
+        res.status(200).json({
+            success: true,
+            message: `${loggedInUser.firstName} your profile updated successfully`,
+            data: loggedInUser,
         });
 
     } catch (error) {
-        res.status(400).send("Eror: " + error.message);
-        
-    }
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        });  
+    };
 });
-
 
 profileRouter.patch("/profile/password", userAuth, async (req, res) => {
     try {
         const loggedInUser = req.user;
-        //console.log(loggedInUser);
         const {currentPassword , newPassword} = req.body;
 
         if(!currentPassword || !newPassword){
-            throw new Error("All fields are mandetory: " + error.message);
-        }
+            return res.status(400).json({
+                success: false,
+                message: 'All fields are mandetory',
+            });
+        };
 
         const isValidCurrentPassword = await bcrypt.compare(currentPassword, loggedInUser.password);
 
         if(!isValidCurrentPassword){
-            throw new Error("User current password is not correct " + error.message);
-        }
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid current password',
+            });
+        };
 
         const newHashedPassword = await bcrypt.hash(newPassword, 10);
         loggedInUser.password = newHashedPassword;
 
         await loggedInUser.save();
-        //console.log(loggedInUser);
 
-        res.json({
+        res.status(200).json({
+            success: true,
             message: `${loggedInUser.firstName}: your password updated successfully!`,
             data : loggedInUser
         });
 
     } catch (error) {
-        res.status(400).send("Error: " + error.message);
-    }
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    };
 });
 
 

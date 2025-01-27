@@ -1,59 +1,91 @@
 const express = require("express");
-const validator = require("validator");
 const bcrypt = require("bcrypt");
-const User = require("../models/userModel");
-const vvalidateSignUpData = require("../utils/validation")
+const User = require("../models/userModel.js");
+const { validateSignUpData , validateLoginData  } = require("../utils/validation.js");
 
 const authRouter = express.Router();
 
-
 authRouter.post('/signup', async (req, res) => {
     try {
-        const isValidated = validateSignUpData(req);
+        const validationResult = validateSignUpData(req);
+        if(!validationResult.isValid){
+            return res.status(400).json({
+                success: false,
+                message: validationResult.errors,
+            });
+        }
+
+        const { firstName, lastName, email, password } = req.body;
         const hashedPassword = await bcrypt.hash(password, 10);
-        console.log(hashedPassword);
         
-        // new instance of user model;
         const user = new User({
             firstName,
             lastName,
             email,
-            password: hashedPassword
+            password: hashedPassword,
         });
+
         await user.save();
-        res.send("User Added successfully !");  
+        res.status(200).json({
+            success: true,
+            message: 'User signUp successfully!',
+        });
     } catch (error) {
-        res.status(400).send('Error saving the user: ' + error.message);
-    }
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    };
 });
 
 
 authRouter.post("/login", async (req, res) => {
     try {
-        const { email, password } = req.body;
+        const validationResult = validateLoginData(req);
+        if(!validationResult.isValid){
+            return res.status(400).json({
+                success: false,
+                message: validationResult.errors,
+            });
+        };
 
-        if (!email) {
-            throw new Error("Email is mandatory");
-        } else if (!password) {
-            throw new Error("Password is compulsory");
-        }
+        const { email, password } = req.body;
 
         const user = await User.findOne({ email: email });
         if (!user) {
-            throw new Error("Email ID is not present in the database");
-        }
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid Credentials!',
+            });
+        };
 
         const isPasswordValid = await user.validatePassword(password);
-        if (isPasswordValid) {
-            const token = await user.getJWT();
-            res.cookie("token", token);
-            res.send("User login successful!");
-        } else {
-            throw new Error("Password is not correct");
+        if(!isPasswordValid){
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid Credentials!',
+            });
         }
+
+        const token = await user.getJWT();
+        if(!token){
+            return res.status(400).json({
+                success: false,
+                message: 'Invalid token',
+            });
+        };
+        res.cookie("token", token);
+        res.status(200).json({
+            success: true,
+            message: 'User login Successfully! ',
+        });
+        
     } catch (error) {
-        res.status(400).send(`Error: ${error.message}`);
-    }
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    };
 });
 
 
@@ -62,10 +94,16 @@ authRouter.post("/logout",  async (req, res) => {
         res.cookie("token", null, {
             expires: new Date(Date.now()),
         });
-        res.send('user logout successfully');
+        res.status(200).json({
+            success: true,
+            message: 'User logout successfully!',
+        });
     } catch (error) {
-        res.status(400).send("error while logout" + error.message)
-    }
-})
+        res.status(400).json({
+            success: false,
+            message: error.message,
+        });
+    };
+});
 
 module.exports = authRouter;
