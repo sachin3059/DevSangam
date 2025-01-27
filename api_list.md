@@ -16,6 +16,8 @@ profileRouter
 - POST /request/review/accepted/:requestId
 - POST /request/review/rejected/:requestId
 
+- staus : "ignored", "interested", "accepted", "rejected"
+
 
 /userRouter
 - GET /connections

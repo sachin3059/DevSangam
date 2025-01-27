@@ -9,6 +9,7 @@ const userSchema = new mongoose.Schema(
     firstName: {
       type: String,
       required: [true, 'First name is required'],
+      index: true, // indexing on first name
       minlength: [2, 'First name must be at least 2 characters long'],
       maxlength: [50, 'First name cannot exceed 50 characters'],
       trim: true,
@@ -49,11 +50,10 @@ const userSchema = new mongoose.Schema(
     },
     gender: {
       type: String,
-      validate(value) {
-        if (!['male', 'female', 'other'].includes(value)) {
-          throw new Error('Gender is not valid');
-        }
-      },
+      enum: {
+        values: ["male", "female", "other"],
+        message: `{VALUE} is not a valid gender type`
+      }
     },
     location: {
       type: String,
@@ -120,6 +120,9 @@ const userSchema = new mongoose.Schema(
   }
 );
 
+
+// indexing on firstname + lastName
+userSchema.index({firstName: 1, lastName: 1});
 
 
 // do not use arrow function here:
