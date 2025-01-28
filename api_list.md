@@ -21,9 +21,7 @@ profileRouter
 
 /userRouter
 - GET /connections
-- GET /requests/received
+- GET /user/request/received
 - GET /feed - Gets you the profiles of other users
 
 
-
-Status: ignore, interested, accepted, rejected
