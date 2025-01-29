@@ -42,7 +42,7 @@ const validateLoginData = (req) => {
         errors.push('Password is required');
     };
 
-    if(errors.size > 0){
+    if(errors.length > 0){
         return {
             isValid: false,
             errors,

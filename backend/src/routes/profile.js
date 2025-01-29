@@ -18,7 +18,7 @@ profileRouter.get("/profile/view", userAuth, async(req, res) => {
         res.status(200).json({
             success: true,
             message: 'User Profile find successfully! ',
-            user: user,
+            data: user,
         });   
     } catch (error) {
         res.status(400).json({
