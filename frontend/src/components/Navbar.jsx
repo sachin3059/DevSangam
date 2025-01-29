@@ -1,4 +1,8 @@
+import { useSelector } from "react-redux";
+
 const Navbar = () => {
+  const user = useSelector((store) => store.user);
+  console.log(user);
   return (
     <nav className="border-b border-gray-300">
       <div className="container mx-auto px-4 sm:px-8 md:px-12 lg:px-20 xl:px-36 py-4 flex justify-between items-center">
