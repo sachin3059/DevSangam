@@ -1,7 +1,8 @@
 import React, { useState } from 'react';
 import { FaSave, FaUpload, FaEdit } from 'react-icons/fa';
 
-const ProfileEdit = () => {
+const ProfileEdit = ({user}) => {
+  console.log(user);
   const [profile, setProfile] = useState({
     firstName: 'John',
     lastName: 'Doe',

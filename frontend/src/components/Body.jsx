@@ -1,7 +1,7 @@
 import axios from "axios";
 import Navbar from "./Navbar";
 import Footer from "./Footer";
-import { Navigate, Outlet, useNavigate } from "react-router";
+import { Outlet, useNavigate } from "react-router";
 import { BASE_URL } from "../utils/constants";
 import { useDispatch, useSelector } from "react-redux";
 import { addUser } from "../utils/userSlice";

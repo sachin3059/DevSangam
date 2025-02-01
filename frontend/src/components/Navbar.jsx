@@ -87,7 +87,7 @@ const Navbar = () => {
                 <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
                   <ul className="py-2 text-sm">
                     <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                      <Link to="/profile/view"> Profile </Link>
+                      <Link to="/profile"> Profile </Link>
                     </li>
                     <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
                       <Link to="/settings"> Settings </Link>

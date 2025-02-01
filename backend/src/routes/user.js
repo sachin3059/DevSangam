@@ -14,7 +14,7 @@ userRouter.get("/user/request/received", userAuth, async (req, res) => {
         const connectionRequest = await Connection.find({
             toUserId: loggedInUser._id,
             status: 'interested',
-        }).populate("fromUserId", ["firstName", "lastName", "gender", "bio", "skills", "ProfilePicture"]);
+        }).populate("fromUserId", ["firstName", "lastName", "gender", "bio", "skills", "profilePicture"]);
 
         res.status(200).json({
             success: true,
@@ -101,7 +101,7 @@ userRouter.get("/feed", userAuth, async (req, res) => {
             data: users,
         });
     } catch (error) {
-      res.status(400).json({
+      res.status(401).json({
         success: false,
         message: error.message,
       })  ;
