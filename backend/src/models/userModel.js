@@ -55,6 +55,13 @@ const userSchema = new mongoose.Schema(
         message: `{VALUE} is not a valid gender type`
       }
     },
+    isPremium: {
+      type: Boolean,
+      default: false,
+    },
+    membershipType: {
+      type: String,
+    },
     location: {
       type: String,
       maxlength: [100, 'Location cannot exceed 100 characters'],
