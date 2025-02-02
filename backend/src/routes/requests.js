@@ -74,14 +74,14 @@ requestRouter.post("/request/review/:status/:requestId", userAuth, async (req, r
                 message: 'Status is not allowed'
             });
         };
-        console.log(loggedInUser);
+        //console.log(loggedInUser);
 
         const connectionRequest = await Connection.findOne({
             _id: requestId,
             toUserId: loggedInUser._id,
             status: "interested",
         }); 
-        console.log(connectionRequest);
+        //console.log(connectionRequest);
 
         if(!connectionRequest){
             return res.status(400).json({
