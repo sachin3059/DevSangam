@@ -32,9 +32,17 @@ app.use("/", userRouter);
 app.use("/", paymentRouter);
 
 
+//chat => application
+const http = require('http');
+const initializeSocket = require("./utils/socket.js");
+const server = http.createServer(app);
+initializeSocket(server);
+
+
+
 connectDB().then( () => {
     console.log("Database connected successfully!");
-    app.listen(3000, () => {
+    server.listen(3000, () => {
         console.log("server is running at port 3000");
     });
 }).catch(err => {
