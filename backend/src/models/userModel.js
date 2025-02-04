@@ -67,17 +67,6 @@ const userSchema = new mongoose.Schema(
       maxlength: [100, 'Location cannot exceed 100 characters'],
       default: '',
     },
-    skills: [
-      {
-        type: [String]
-      },
-    ],
-    interests: [
-      {
-        type: String,
-        trim: true,
-      },
-    ],
     profilePicture: {
       type: String,
       default:
@@ -87,10 +76,6 @@ const userSchema = new mongoose.Schema(
           throw new Error(`Invalid profile picture URL: ${value}`);
         }
       },
-    },
-    preferences: {
-      matchBySkills: { type: Boolean, default: true },
-      matchByLocation: { type: Boolean, default: false },
     },
     socialLinks: {
       github: {
@@ -111,6 +96,15 @@ const userSchema = new mongoose.Schema(
           }
         },
       },
+      twitter: {
+        type: String,
+        default: '',
+        validate(value) {
+          if (value && !validator.isURL(value)) {
+            throw new Error(`Invalid Twitter URL: ${value}`);
+          }
+        },
+      },
       portfolio: {
         type: String,
         default: '',
@@ -121,6 +115,17 @@ const userSchema = new mongoose.Schema(
         },
       },
     },
+    achievements:{
+      type: String
+    },
+    experience: {
+      type: String,
+    },
+    skills: [
+      {
+        type: [String]
+      },
+    ]
   },
   {
     timestamps: true, 

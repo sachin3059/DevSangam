@@ -1,49 +1,56 @@
-import axios from "axios";
-import Navbar from "./Navbar";
+import { Outlet, useNavigate, useLocation } from "react-router-dom";
 import Footer from "./Footer";
-import { Outlet, useNavigate } from "react-router";
-import { BASE_URL } from "../utils/constants";
+import Navbar from "./Navbar";
+import axios from "axios";
 import { useDispatch, useSelector } from "react-redux";
 import { addUser } from "../utils/userSlice";
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+
+import HeroSection from "./HeroSection";
+import FAQAccordion from "./FaqAccordian";
 
 const Body = () => {
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
-  const userData = useSelector( (store) => store.user);
+    const dispatch = useDispatch();
+    const navigate = useNavigate();
+    const location = useLocation(); // Get current route
 
-  const fetchUser = async() => {
-    if(userData) return;
-    try {
-      const res = await axios.get(
-        `${BASE_URL}/profile/view`,
-        {withCredentials: true}
-      );
+    const userData = useSelector((store) => store.user);
+    const [showHero, setShowHero] = useState(true);
 
-      dispatch(addUser(res.data));
+    const fetchUser = async () => {
+        if (userData) return;
+        try {
+            const res = await axios.get(`${import.meta.env.VITE_BASE_URL}/profile/view`, { withCredentials: true });
+            dispatch(addUser(res?.data?.data));
+            console.log(res?.data?.data);
+        } catch (error) {
+            if (error.response?.status === 401) {
+                navigate("/");
+            } else {
+                console.log("Something went wrong!");
+            }
+        }
+    };
 
-    } catch (error) {
-      if(error.status === 401){
-        navigate("/login");
-      }
-      else{
-        console.error(error);
-      } 
-    } 
-  }
+    useEffect(() => {
+        fetchUser();
+    }, []);
 
-  useEffect( () => {
-    fetchUser();
-  }, []);
+    return (
+        <div>
+            <Navbar />
 
+            {location.pathname === "/" && (
+                <>
+                    {!userData && showHero && <HeroSection onHideHero={() => setShowHero(false)} />}
+                    <FAQAccordion />
+                </>
+            )}
 
-  return (
-    <div>
-        < Navbar />
-        < Outlet />
-        < Footer />
-    </div>
-  )
-}
+            <Outlet />
+            <Footer />
+        </div>
+    );
+};
 
-export default Body
+export default Body;

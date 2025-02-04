@@ -1,100 +1,96 @@
-import { useState} from "react";
-import { useNavigate } from "react-router-dom";
 import axios from "axios";
+import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useDispatch } from "react-redux";
 import { addUser } from "../utils/userSlice";
-import { BASE_URL } from "../utils/constants";
+import { Link } from "react-router-dom";
 
 const Login = () => {
-  const [email, setEmail] = useState("abhi@gmail.com");
-  const [password, setPassword] = useState("Abhi123@#");
-  const [error, setError] = useState("");
-  const dispatch = useDispatch();
-  const navigate = useNavigate();
+    const [email, setEmail] = useState("");
+    const [password, setPassword] = useState("");
+    const [error, setError] = useState("");
+    const [loading, setLoading] = useState(false);
 
-  const handleLogin = async () => {
-    try {
-      const res = await axios.post(
-        `${BASE_URL}/login`,
-        {
-          email,
-          password,
-        },
-        {withCredentials: true}
-      );
+    const navigate = useNavigate();
+    const dispatch = useDispatch();
 
-      dispatch(addUser(res.data));
-      return navigate("/");
-    } catch (error) {
-      setError(error?.response?.data?.message || "Something went wrong");
-    }
-  };
+    const handleLogin = async () => {
+        setLoading(true);
+        setError("");
+        try {
+            const res = await axios.post(
+                "http://localhost:3000/login",
+                { email, password },
+                { withCredentials: true }
+            );
+            dispatch(addUser(res?.data?.data));
+            navigate("/feed");
+        } catch (error) {
+            setError(error?.response?.data?.message || "Login failed. Try again.");
+        }
+        setLoading(false);
+    };
 
-  return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50">
-      <div className="w-full max-w-md border border-gray-300 rounded-lg p-6 shadow-sm bg-white">
-        <h2 className="text-2xl font-bold text-center mb-6">Welcome Back!</h2>
+    return (
+        <div className="flex justify-center items-center min-h-screen bg-gray-100">
+            <div className="flex flex-col items-center border border-gray-300 shadow-lg p-8 rounded-lg w-96 bg-white">
+                <h2 className="text-2xl font-semibold mb-4 text-gray-700">Welcome again!</h2>
 
-        {/* Use onSubmit here to handle form submission */}
-        <form className="space-y-4" onSubmit={handleLogin}>
-          {/* Email Input */}
-          <div>
-            <label htmlFor="email" className="block text-sm font-medium text-gray-700 mb-1">
-              Email
-            </label>
-            <input
-              type="email"
-              value={email}
-              id="email"
-              placeholder="Enter your email"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-gray-500 focus:border-gray-500"
-              onChange={(e) => setEmail(e.target.value)}
-            />
-          </div>
+                {/* Error Message */}
+                {error && <p className="text-red-500 text-sm">{error}</p>}
 
-          {/* Password Input */}
-          <div>
-            <label htmlFor="password" className="block text-sm font-medium text-gray-700 mb-1">
-              Password
-            </label>
-            <input
-              type="password"
-              id="password"
-              value={password}
-              placeholder="Enter your password"
-              className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring-gray-500 focus:border-gray-500"
-              onChange={(e) => setPassword(e.target.value)}
-            />
-            <div className="text-right mt-2">
-              <a href="#forgot-password" className="text-sm text-gray-800 hover:underline">
-                Forgot Password?
-              </a>
+                <div className="flex flex-col w-full mt-3">
+                    <label className="mb-1 font-medium text-gray-600">Email</label>
+                    <input
+                        className="border px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        type="email"
+                        placeholder="Enter your email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                    />
+                </div>
+
+                <div className="flex flex-col w-full mt-3">
+                    <label className="mb-1 font-medium text-gray-600">Password</label>
+                    <input
+                        className="border px-3 py-2 rounded-md focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        type="password"
+                        placeholder="Enter your password"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                    />
+                </div>
+
+                {/* Forgot Password */}
+                <div className="w-full text-right mt-2">
+                    <Link to="#forgot-password" className="text-sm text-blue-500 hover:underline">
+                        Forgot password?
+                    </Link>
+                </div>
+
+                {/* Login Button */}
+                <button
+                    className={`mt-4 px-4 py-2 w-full rounded-md text-white ${
+                        loading ? "bg-gray-400 cursor-not-allowed" : "bg-blue-500 hover:bg-blue-600"
+                    } transition-all`}
+                    onClick={handleLogin}
+                    disabled={loading}
+                >
+                    {loading ? "Signing in..." : "Sign In"}
+                </button>
+
+                {/* Signup Redirect */}
+                <div className="mt-4 text-sm">
+                    <p>
+                        Don't have an account?{" "}
+                        <Link to="/signup" className="font-semibold text-blue-500 hover:underline">
+                            Sign Up
+                        </Link>
+                    </p>
+                </div>
             </div>
-          </div>
-
-          {/* Submit Button */}
-          <p className="text-red-500">{error}</p>
-          <div>
-            <button
-              type="button" 
-              className="w-full px-4 py-2 bg-gray-800 text-white rounded-md hover:bg-gray-700 focus:ring-2 focus:ring-gray-500"
-              onClick={handleLogin}
-            >
-              Sign In
-            </button>
-          </div>
-        </form>
-
-        {/* Footer */}
-        <p className="text-sm text-center text-gray-600 mt-4">
-          Don't have an account?{' '}
-          <a href="#signup" className="text-gray-800 underline">
-            Sign Up
-          </a>
-        </p>
-      </div>
-    </div>
-  );
+        </div>
+    );
 };
 
 export default Login;

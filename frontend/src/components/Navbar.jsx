@@ -1,126 +1,148 @@
-import { useSelector, useDispatch } from "react-redux";
-import { useState } from "react";
-import { FaSearch, FaInfoCircle, FaBlog } from "react-icons/fa"; 
-import { Link, useNavigate } from "react-router";
-import { BASE_URL } from "../utils/constants";
+import React, { useState, useRef, useEffect } from "react";
 import axios from "axios";
+import { useSelector, useDispatch } from "react-redux";
 import { removeUser } from "../utils/userSlice";
+import { useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { FiMenu, FiX } from "react-icons/fi";
 
 const Navbar = () => {
-  const user = useSelector((store) => store.user);
+  const [dropDown, setDropDown] = useState(false);
+  const [menuOpen, setMenuOpen] = useState(false);
   const dispatch = useDispatch();
+  const user = useSelector((store) => store.user);
   const navigate = useNavigate();
-  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
-  const [isSearchVisible, setIsSearchVisible] = useState(false); // For mobile search bar toggle
+  const dropdownRef = useRef(null);
 
   const handleLogout = async () => {
     try {
-      await axios.post(`${BASE_URL}/logout`,{},{ withCredentials: true});
+      await axios.post(
+        `${import.meta.env.VITE_BASE_URL}/logout`,
+        {},
+        { withCredentials: true }
+      );
       dispatch(removeUser());
-      navigate("/login");
+      navigate("/");
     } catch (error) {
-      console.log(error);
+      console.error("Logout failed:", error);
     }
   };
 
-  //console.log(user);
+
+  const toggleDropDown = () => {
+    setDropDown((prev) => !prev);
+  };
+
+  const toggleMenu = () => {
+    setMenuOpen((prev) => !prev);
+  };
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+        setDropDown(false);
+      }
+    };
+
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, []);
 
   return (
-    <nav className="border-b border-gray-300 bg-white shadow-md">
-      <div className="container mx-auto px-4 sm:px-8 md:px-12 lg:px-20 xl:px-36 py-4 flex justify-between items-center">
-        
-        {/* Left Section (Brand + Search Bar for Logged-In Users) */}
-        <div className="flex items-center space-x-4">
-          <div className="text-xl font-bold">
-            <Link to="/"> DevSangam </Link>
-          </div>
+    <div className="relative flex justify-between items-center px-6 md:px-24 py-4 bg-white shadow-md">
+      {/* Left Section - Logo */}
+      <h1 className="text-2xl font-semibold text-gray-800">
+        <Link to="/"> <span className="text-blue-600 ">Dev</span>Sangam</Link>
+      </h1>
 
-          {/* Search Bar (Visible on md+ Screens) */}
-          {user && (
-            <input
-              type="text"
-              placeholder="Search..."
-              className="hidden md:block px-3 py-1 border border-gray-300 rounded-md focus:ring focus:ring-gray-400 outline-none w-60"
-            />
-          )}
+      {/* Mobile Menu Button */}
+      <button className="lg:hidden text-gray-800 text-2xl" onClick={toggleMenu}>
+        {menuOpen ? <FiX /> : <FiMenu />}
+      </button>
 
-          {/* Search Icon for Small Screens */}
-          {user && (
-            <button
-              className="md:hidden p-2 rounded-full bg-gray-200 hover:bg-gray-300"
-              onClick={() => setIsSearchVisible(!isSearchVisible)}
-            >
-              <FaSearch size={18} />
-            </button>
-          )}
-        </div>
+      {/* Right Section - Navigation */}
+      <div
+        className={`absolute lg:static top-16 left-0 w-full lg:w-auto bg-white lg:bg-transparent shadow-lg lg:shadow-none transition-transform duration-300 ease-in-out transform ${
+          menuOpen ? "translate-x-0" : "-translate-x-full lg:translate-x-0"
+        } lg:flex items-center space-x-6 p-6 lg:p-0`}
+      >
+        {user ? (
+          <div className="flex flex-col lg:flex-row lg:items-center space-y-4 lg:space-y-0 lg:space-x-6">
+            <ul className="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-6 text-gray-800 font-medium">
+              <li>
+                <Link to="/feed">Feed</Link>
+              </li>
+              <li>
+                <Link to="/blogs">Blog</Link>
+              </li>
+              <li>
+                <Link to="/events">Events</Link>
+              </li>
+            </ul>
 
-        {/* Navigation Links */}
-        <ul className="flex space-x-4 sm:space-x-6 md:space-x-8 items-center">
-          <li>
-            <Link to="/about" className="px-2 py-1 flex items-center">
-              <FaInfoCircle className="block sm:hidden" size={18} /> 
-              <span className="hidden sm:block">About Us</span> 
-            </Link>
-          </li>
-          <li>
-            <Link to="/blog" className="px-2 py-1 flex items-center">
-              <FaBlog className="block sm:hidden" size={18} /> 
-              <span className="hidden sm:block">Blog</span> 
-            </Link>
-          </li>
-
-          {/* User Profile / Sign In Button */}
-          {user ? (
-            <div className="relative">
-              <button onClick={() => setIsDropdownOpen(!isDropdownOpen)} className="flex items-center space-x-2">
-                <img
-                  src={user.data.profilePicture}
-                  alt="Profile"
-                  className="w-10 h-10 rounded-full border"
-                />
-                <span className="font-medium">{user.data.firstName}</span>
-              </button>
-
-              {/* Dropdown Menu */}
-              {isDropdownOpen && (
-                <div className="absolute right-0 mt-2 w-40 bg-white border border-gray-200 rounded-lg shadow-lg">
-                  <ul className="py-2 text-sm">
-                    <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                      <Link to="/profile"> Profile </Link>
+            {/* Profile Dropdown */}
+            <div className="relative" ref={dropdownRef}>
+              <img
+                className="w-12 h-12 rounded-full cursor-pointer transition-transform duration-200 transform hover:scale-105"
+                src={user.profilePicture}
+                alt="User Profile"
+                onClick={toggleDropDown}
+              />
+              {dropDown && (
+                <div className="absolute right-0 mt-2 w-48 bg-white border border-gray-300 shadow-lg rounded-lg z-10">
+                  <ul className="space-y-2 py-2 text-gray-800 text-sm font-medium">
+                    <li className="hover:bg-gray-100 px-4 py-2 rounded-lg">
+                      <Link to="/profile">Profile</Link>
                     </li>
-                    <li className="px-4 py-2 hover:bg-gray-100 cursor-pointer">
-                      <Link to="/settings"> Settings </Link>
+                    <li className="hover:bg-gray-100 px-4 py-2 rounded-lg">
+                      <Link to="/profile/edit">Edit Profile</Link>
                     </li>
-                    <li 
-                      className="px-4 py-2 text-red-600 hover:bg-gray-100 cursor-pointer"
+                    <li className="hover:bg-gray-100 px-4 py-2 rounded-lg">
+                      <Link to="/connections">Connections</Link>
+                    </li>
+                    <li className="hover:bg-gray-100 px-4 py-2 rounded-lg">
+                      <Link to="/requests">Connection Requests</Link>
+                    </li>
+                    <li className="hover:bg-gray-100 px-4 py-2 rounded-lg">
+                      <Link to="/premium">Premium</Link>
+                    </li>
+                    <li className="hover:bg-gray-100 px-4 py-2 rounded-lg">
+                      <Link to="/settings">Settings</Link>
+                    </li>
+                    <li
+                      className="hover:bg-gray-100 px-4 py-2 rounded-lg cursor-pointer"
                       onClick={handleLogout}
                     >
-                    Logout
+                      Logout
                     </li>
                   </ul>
                 </div>
               )}
             </div>
-          ) : (
-            <button className="px-4 py-1 border rounded-sm cursor-pointer">
-              Sign In
-            </button>
-          )}
-        </ul>
+          </div>
+        ) : (
+          <ul className="flex flex-col lg:flex-row space-y-4 lg:space-y-0 lg:space-x-8 text-gray-800 font-medium">
+            <li>
+              <Link className="hover:text-gray-500 transition-colors" to="/blog">
+                Blog
+              </Link>
+            </li>
+            <li>
+              <Link className="hover:text-gray-500 transition-colors" to="/events">
+                Events
+              </Link>
+            </li>
+            <li>
+              <Link className="hover:text-gray-500 transition-colors" to="/about">
+                About Us
+              </Link>
+            </li>
+          </ul>
+        )}
       </div>
-
-      {/* Search Bar (Visible when toggled on small screens) */}
-      {isSearchVisible && user && (
-        <div className="md:hidden px-4 pb-3">
-          <input
-            type="text"
-            placeholder="Search..."
-            className="w-full px-3 py-2 border border-gray-300 rounded-md focus:ring focus:ring-gray-400 outline-none"
-          />
-        </div>
-      )}
-    </nav>
+    </div>
   );
 };
 
